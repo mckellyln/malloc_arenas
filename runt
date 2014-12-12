@@ -1,0 +1,40 @@
+#!/bin/bash
+
+echo " "
+echo "MALLOC_ARENA_MAX not set"
+time ./t-test1def
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=1"
+time MALLOC_ARENA_MAX=1 ./t-test1def
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=2"
+time MALLOC_ARENA_MAX=2 ./t-test1def
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=4"
+time MALLOC_ARENA_MAX=4 ./t-test1def
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=8"
+time MALLOC_ARENA_MAX=8 ./t-test1def
+
+echo " "
+echo " ==================="
+echo " "
+
+echo "tc malloc -"
+time ./t-test1tc
+
+echo " "
+echo " ==================="
+echo " "
+
+echo "dl malloc -"
+time ./t-test1dl
+

@@ -1,0 +1,77 @@
+#!/bin/bash
+
+echo " "
+echo "MALLOC_ARENA_MAX not set"
+time ./mtestdef
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=1"
+time MALLOC_ARENA_MAX=1 ./mtestdef
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=2"
+time MALLOC_ARENA_MAX=2 ./mtestdef
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=4"
+time MALLOC_ARENA_MAX=4 ./mtestdef
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=8"
+time MALLOC_ARENA_MAX=8 ./mtestdef
+
+echo " "
+echo " ==================="
+echo " "
+
+echo "MALLOC_ARENA_MAX not set -x"
+time ./mtestdef -x
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=1 -x"
+time MALLOC_ARENA_MAX=1 ./mtestdef -x
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=2 -x"
+time MALLOC_ARENA_MAX=2 ./mtestdef -x
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=4 -x"
+time MALLOC_ARENA_MAX=4 ./mtestdef -x
+echo " "
+echo " -------------------"
+echo " "
+echo "MALLOC_ARENA_MAX=8 -x"
+time MALLOC_ARENA_MAX=8 ./mtestdef -x
+
+echo " "
+echo " ==================="
+echo " "
+
+echo "tc malloc -"
+time ./mtesttc
+echo " "
+echo " -------------------"
+echo " "
+echo "tc malloc with -x"
+time ./mtesttc
+
+echo " "
+echo " ==================="
+echo " "
+
+echo "dl malloc -"
+time ./mtestdl
+echo " "
+echo " -------------------"
+echo " "
+echo "dl malloc with -x"
+time ./mtestdl
+
