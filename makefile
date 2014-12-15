@@ -13,6 +13,9 @@ mtestje: mtest.c makefile
 mtestdl: mtest.c malloc.c makefile
 	    gcc -O2 -Wall -std=gnu99 -Wno-unused-result mtest.c malloc.c -o $@ -lpthread
 
+#
+# NOTE for ptmalloc make sure to build it with linux-pthread or it will not be thread-safe
+#
 mtestpt3: mtest.c makefile
 	    gcc -O2 -Wall -std=gnu99 -Wno-unused-result mtest.c -o $@ -L/home/mkelly/Downloads/ptmalloc3 -lptmalloc3 -lpthread
 
@@ -52,6 +55,9 @@ t-test1je: t-test1.c makefile
 t-test1dl: t-test1.c malloc.c makefile
 	    gcc -O2 -Wall -std=gnu99 -Wno-unused-result t-test1.c malloc.c -o $@ -lpthread
 
+#
+# NOTE for ptmalloc make sure to build it with linux-pthread or it will not be thread-safe
+#
 t-test1pt3: t-test1.c makefile
 	    gcc -O2 -Wall -std=gnu99 -Wno-unused-result t-test1.c -o $@ -L/home/mkelly/Downloads/ptmalloc3 -lptmalloc3 -lpthread
 

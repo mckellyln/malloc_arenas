@@ -586,7 +586,7 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 
 // mck
 #define USE_LOCKS 1
-#define USE_SPIN_LOCKS 1
+#define USE_SPIN_LOCKS 0
 // mck
 
 #ifndef USE_LOCKS /* ensure true if spin or recursive locks set */
