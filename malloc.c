@@ -586,7 +586,7 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 
 // mck
 #define USE_LOCKS 1
-#define USE_SPIN_LOCKS 0
+// #define USE_SPIN_LOCKS 0
 // mck
 
 #ifndef USE_LOCKS /* ensure true if spin or recursive locks set */
@@ -1822,7 +1822,31 @@ static FORCEINLINE int win32munmap(void* ptr, size_t size) {
 /* #define TRY_LOCK(lk) ... */
 /* static MLOCK_T malloc_global_mutex = ... */
 
+#pragma message "using pthread_spin_lock ...."
+
+#include <pthread.h>
+
+#define MLOCK_T               pthread_spinlock_t
+#define ACQUIRE_LOCK(lk)      pthread_spin_lock(lk)
+#define RELEASE_LOCK(lk)      pthread_spin_unlock(lk)
+#define TRY_LOCK(lk)          (!pthread_spin_trylock(lk))
+#define INITIAL_LOCK(lk)      pthread_spin_init(lk, PTHREAD_PROCESS_PRIVATE)
+#define DESTROY_LOCK(lk)      pthread_spin_destroy(lk)
+
+static MLOCK_T malloc_global_mutex;
+
+#define NEED_GLOBAL_LOCK_INIT
+static volatile int malloc_global_mutex_status = 0;
+static void init_malloc_global_mutex() {
+    if (malloc_global_mutex_status == 0) {
+        INITIAL_LOCK(&malloc_global_mutex);
+        malloc_global_mutex_status = 1;
+    }
+}
+
 #elif USE_SPIN_LOCKS
+
+#pragma message "using native spin locks ...."
 
 /* First, define CAS_LOCK and CLEAR_LOCK on ints */
 /* Note CAS_LOCK defined to return 0 on success */
@@ -2003,6 +2027,9 @@ static void init_malloc_global_mutex() {
 }
 
 #else /* pthreads-based locks */
+
+#pragma message "using pthread_mutex_lock ...."
+
 #define MLOCK_T               pthread_mutex_t
 #define ACQUIRE_LOCK(lk)      pthread_mutex_lock(lk)
 #define RELEASE_LOCK(lk)      pthread_mutex_unlock(lk)
