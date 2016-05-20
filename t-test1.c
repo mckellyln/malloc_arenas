@@ -123,6 +123,10 @@ static int pthread_join(pthread_t t, void **res)
 
 #else
 
+#ifdef JEMALLOC
+# include <jemalloc/jemalloc.h>
+#endif
+
 #ifdef USE_PTHREADS /* Posix threads */
 
 #include <pthread.h>
@@ -166,6 +170,7 @@ typedef int pthread_t;
 #include <sys/types.h>
 #include <malloc.h>
 
+#include "memutil.h"
 
 /*
  * Ultra-fast RNG: Use a fast hash of integers.
@@ -548,6 +553,11 @@ int main(int argc, char *argv[])
 	printf("total=%d threads=%d i_max=%d size=%ld bins=%d\n",
 		   n_total_max, n_thr, i_max, size, bins);
 
+    printf("getHeapInfo(): %lu\n", getHeapInfo());
+    printf("getVmSize(\"VmPeak\"): %lu\n", getVMSize("VmPeak"));
+    printf("getVmSize(\"VmSize\"): %lu\n", getVMSize("VmSize"));
+    printf("getVmSize(\"VmData\"): %lu\n", getVMSize("VmData"));
+
 	st = malloc(n_thr * sizeof(*st));
 	if (!st) exit(-1);
 
@@ -639,13 +649,20 @@ int main(int argc, char *argv[])
 #endif
 	}
 
+#if 0
     char command[2048];
-    sprintf(command, "smem | grep \"%d %s\" | grep -v grep", (int)getpid(), getlogin());
+    sprintf(command, "smem -U %s | grep \"%d \" | grep -v grep", getlogin(), (int)getpid());
     printf("--- %s (%d) ---\n", command, (int)getpid());
     printf("  PID User     Command                         Swap      USS      PSS      RSS\n");
     fflush(NULL);
     (void)system(command);
     fflush(NULL);
+#endif
+
+    printf("getHeapInfo(): %lu\n", getHeapInfo());
+    printf("getVmSize(\"VmPeak\"): %lu\n", getVMSize("VmPeak"));
+    printf("getVmSize(\"VmSize\"): %lu\n", getVMSize("VmSize"));
+    printf("getVmSize(\"VmData\"): %lu\n", getVMSize("VmData"));
 
 #if USE_PTHREADS
 	pthread_mutex_unlock(&finish_mutex);
@@ -660,6 +677,12 @@ int main(int argc, char *argv[])
 	malloc_stats();
 #endif
 	printf("Done.\n");
+
+    printf("getHeapInfo(): %lu\n", getHeapInfo());
+    printf("getVmSize(\"VmPeak\"): %lu\n", getVMSize("VmPeak"));
+    printf("getVmSize(\"VmSize\"): %lu\n", getVMSize("VmSize"));
+    printf("getVmSize(\"VmData\"): %lu\n", getVMSize("VmData"));
+
 	return 0;
 }
 

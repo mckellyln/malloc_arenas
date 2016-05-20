@@ -1,5 +1,9 @@
 // ****************************************************************************
 
+#ifdef JEMALLOC
+# include <jemalloc/jemalloc.h>
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 #include <assert.h>
@@ -12,6 +16,8 @@
 #include <malloc.h>
 #include <sys/types.h>
 #include <pwd.h>
+
+#include "memutil.h"
 
 #define MALLOC malloc
 #define FREE   free
@@ -125,7 +131,6 @@ main(int argc, char **argv)
     time_t t;
     time_t lt;
     pthread_t thread;
-    char command[128];
 
 #if 0
 #ifdef M_ARENA_MAX
@@ -133,6 +138,13 @@ main(int argc, char **argv)
 #else
 #   warning M_ARENA_MAX not supported
 #endif
+#endif
+
+#ifdef JEMALLOC
+    size_t version;
+    size_t vlen = sizeof(size_t);
+    mallctl("version", &version, &vlen, NULL, 0);
+    printf("jemalloc version: %s\n", (char *)version);
 #endif
 
     if (argc > 1) {
@@ -166,6 +178,11 @@ main(int argc, char **argv)
 
     nps = nallocs;
 
+    printf("getHeapInfo(): %lu\n", getHeapInfo());
+    printf("getVmSize(\"VmPeak\"): %lu\n", getVMSize("VmPeak"));
+    printf("getVmSize(\"VmSize\"): %lu\n", getVMSize("VmSize"));
+    printf("getVmSize(\"VmData\"): %lu\n", getVMSize("VmData"));
+
     printf("about to malloc %lu bytes\n", nps*sizeof(*ps) );
     ps = MALLOC(nps*sizeof(*ps));
     assert(ps);
@@ -177,6 +194,11 @@ main(int argc, char **argv)
     printf("about to malloc %lu bytes\n", nss*sizeof(*ss) );
     ss = MALLOC(nss*sizeof(*ss));
     assert(ss);
+
+    printf("getHeapInfo(): %lu\n", getHeapInfo());
+    printf("getVmSize(\"VmPeak\"): %lu\n", getVMSize("VmPeak"));
+    printf("getVmSize(\"VmSize\"): %lu\n", getVMSize("VmSize"));
+    printf("getVmSize(\"VmData\"): %lu\n", getVMSize("VmData"));
 
     if (pagesize != 4096) {
         printf("WARNING -- this program expects 4096 byte pagesize!\n");
@@ -209,19 +231,32 @@ main(int argc, char **argv)
 #endif
 
 #if 0
+    char command[128];
     sprintf(command, "cat /proc/%d/status | grep -i vm", (int)getpid());
     printf("--- %s (%d) ---\n", command, (int)getpid());
     fflush(NULL);
     (void)system(command);
     fflush(NULL);
-#endif
 
-    sprintf(command, "smem | grep \"%d %s\" | grep -v grep", (int)getpid(), getlogin());
-    printf("--- %s (%d) ---\n", command, (int)getpid());
+    sprintf(command, "smem -U %s | grep \"%d \" | grep -v grep", getlogin(), (int)getpid());
+    printf("--- %s ---\n", command);
     printf("  PID User     Command                         Swap      USS      PSS      RSS\n");
     fflush(NULL);
-    (void)system(command);
+    char line[1001];
+    FILE *fp = popen(command, "r");
+    if (fp != NULL) {
+        while(fgets(line, 100, fp) != NULL) {
+            fprintf(stdout, "%s", line);
+        }
+        pclose(fp);
+    } else {
+        fprintf(stdout,"Error, unable to popen(), errno = %d\n", errno);
+    }
+    // (void)system(command);
     fflush(NULL);
+#endif
+
+    // sleep(100);
 
     // access the stragglers
     printf("--- accessing memory ---\n");
@@ -241,6 +276,31 @@ main(int argc, char **argv)
     }
     printf("--- done in %d seconds ---\n", (int)(time(NULL)-t));
 
+    printf("getHeapInfo(): %lu\n", getHeapInfo());
+    printf("getVmSize(\"VmPeak\"): %lu\n", getVMSize("VmPeak"));
+    printf("getVmSize(\"VmSize\"): %lu\n", getVMSize("VmSize"));
+    printf("getVmSize(\"VmData\"): %lu\n", getVMSize("VmData"));
+
+#ifdef JEMALLOC
+    // Update the statistics cached by mallctl.
+    uint64_t epoch = 1;
+    size_t sz = sizeof(epoch);
+    mallctl("epoch", &epoch, &sz, &epoch, sz);
+
+    // Get basic allocation statistics.  Take care to check for
+    // errors, since --enable-stats must have been specified at
+    // build time for these statistics to be available.
+    size_t allocated, active, mapped;
+    sz = sizeof(size_t);
+    if (mallctl("stats.allocated", &allocated, &sz, NULL, 0) == 0
+            && mallctl("stats.active", &active, &sz, NULL, 0) == 0
+            && mallctl("stats.mapped", &mapped, &sz, NULL, 0) == 0) {
+        fprintf(stderr, "Current allocated/active/mapped: %zu/%zu/%zu\n", allocated, active, mapped);
+    }
+#endif
+
+    fflush(NULL);
+    // sleep(100);
     return 0;
 }
 

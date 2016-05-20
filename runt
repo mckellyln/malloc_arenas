@@ -35,6 +35,19 @@ echo " "
 echo " ==================="
 echo " "
 
+echo "je malloc -"
+time ./t-test1je
+
+echo " "
+echo " ==================="
+echo " "
+
 echo "dl malloc -"
 time ./t-test1dl
 
+echo " "
+echo " ==================="
+echo " "
+
+echo "tbb malloc -"
+time ./t-test1tbb

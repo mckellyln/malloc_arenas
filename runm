@@ -61,7 +61,19 @@ echo " "
 echo " -------------------"
 echo " "
 echo "tc malloc with -x"
-time ./mtesttc
+time ./mtesttc -x
+
+echo " "
+echo " ==================="
+echo " "
+
+echo "je malloc -"
+time ./mtestje
+echo " "
+echo " -------------------"
+echo " "
+echo "je malloc with -x"
+time ./mtestje -x
 
 echo " "
 echo " ==================="
@@ -73,5 +85,17 @@ echo " "
 echo " -------------------"
 echo " "
 echo "dl malloc with -x"
-time ./mtestdl
+time ./mtestdl -x
+
+echo " "
+echo " ==================="
+echo " "
+
+echo "tbb malloc -"
+time ./mtesttbb
+echo " "
+echo " -------------------"
+echo " "
+echo "tbb malloc with -x"
+time ./mtesttbb -x
 
