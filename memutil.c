@@ -54,7 +54,7 @@ uint64_t getVMSize(const char *type)
     {
         if (!strncmp(ln, name, len))
         {
-            if (2 == sscanf(&ln[7], "%lu%s", &dataSize, unitstr))
+            if (2 == sscanf(&ln[len], "%lu%s", &dataSize, unitstr))
             {
                 if (!strcasecmp(unitstr, "mB"))
                     dataSize *= 1024ULL;
