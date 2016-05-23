@@ -33,9 +33,10 @@ static uint pagesize;
 
 static uint nallocs;
 
-static volatile int go;
-static volatile int done;
-static volatile int spin;
+static volatile int go = 0;
+static volatile int done = 0;
+static volatile int spin = 0;
+static volatile int dosleep = 0;
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void **ps;  // allocations that are freed in turn by each thread
@@ -147,16 +148,16 @@ main(int argc, char **argv)
     printf("jemalloc version: %s\n", (char *)version);
 #endif
 
-    if (argc > 1) {
-        if (! strcmp(argv[1], "-x")) {
-            spin = 1;
-            argc--;
-            argv++;
+   int opt;
+   while ((opt = getopt(argc, argv, "xs")) != -1) {
+        switch (opt) {
+            case 's':   dosleep = 1; break;
+            case 'x':   spin = 1; break;
+            default:
+                printf("usage: %s [-x] [-s]\n", argv[0]);
+                return 1;
+                break;
         }
-    }
-    if (argc > 1) {
-        printf("usage: memx2 [-x]\n");
-        return 1;
     }
 
     cpus = sysconf(_SC_NPROCESSORS_CONF);
@@ -194,6 +195,14 @@ main(int argc, char **argv)
     printf("about to malloc %lu bytes\n", nss*sizeof(*ss) );
     ss = MALLOC(nss*sizeof(*ss));
     assert(ss);
+
+#if 0
+    char *p = alloca(10000000);
+    if (!p)
+        printf("alloca failed, errno = %d\n", errno);
+    else
+        printf("alloca() ok ...\n");
+#endif
 
     printf("getHeapInfo(): %lu\n", getHeapInfo());
     printf("getVmSize(\"VmPeak\"): %lu\n", getVMSize("VmPeak"));
@@ -300,7 +309,8 @@ main(int argc, char **argv)
 #endif
 
     fflush(NULL);
-    // sleep(100);
+    if (dosleep)
+        sleep(100);
     return 0;
 }
 
